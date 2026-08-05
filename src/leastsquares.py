@@ -60,10 +60,14 @@ class LinearRegression:
         plt.ylabel("y")
         plt.legend()
         plt.show()
+def dataset_split(dataset,split:float):
+    dt_split = len(dataset) * split
+    validation_dataset = dataset.sample(n=int(dt_split))
+    train_dataset = dataset.drop(validation_dataset.index)
+    return train_dataset, validation_dataset
 
 def main():
-    train_dataset = TOY_DATASET[:25]
-    validation_dataset = TOY_DATASET[25:]
+    train_dataset, validation_dataset = dataset_split(TOY_DATASET, 0.2)
     lr = LinearRegression()
     lr.fit(train_dataset)
     lr.predict(1)
