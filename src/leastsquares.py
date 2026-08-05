@@ -17,14 +17,10 @@ class LinearRegression:
         sumy = self.train_dataset["y"].sum()
         sumxy = (self.train_dataset["x"] * self.train_dataset["y"]).sum()
         sumx2 = (self.train_dataset["x"] ** 2).sum()
-        n = self.train_dataset["x"].count()
-        print(sumx)
-        print(sumy)
-        print(sumxy)
-        print(sumx2)
-        print(n)
-        self.m = n * sumxy - sumx * sumy/n * sumx2 - (sumx**2)
-        self.b = sumy - self.m * sumx/n
+        n = len(self.train_dataset)
+
+        self.m = (n * sumxy - sumx * sumy) / (n * sumx2 - sumx ** 2)
+        self.b = (sumy - self.m * sumx) / n
 
     def linear_function(self,x):
         self.get_param()
