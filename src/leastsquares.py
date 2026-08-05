@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 BASE_DIR = Path(__file__).resolve().parent.parent
-arquivo = BASE_DIR / "data" / "toy_dataset.csv"
+arquivo = BASE_DIR / "data" / "toy_dataset"
 TOY_DATASET = pd.read_csv(arquivo)
 
 class LinearRegression:
