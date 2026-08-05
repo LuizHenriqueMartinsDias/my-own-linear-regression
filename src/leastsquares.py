@@ -6,6 +6,7 @@ from pandas import Series
 BASE_DIR = Path(__file__).resolve().parent.parent
 arquivo = BASE_DIR / "data" / "toy_dataset"
 TOY_DATASET = pd.read_csv(arquivo)
+import matplotlib.pyplot as plt
 
 class LinearRegression:
     def __init__(self):
@@ -31,6 +32,35 @@ class LinearRegression:
        sqt = ((validation_dataset["y"].mean() - validation_dataset["y"])**2).sum()
        print("R² =",1-(sqr/sqt))
 
+    def plot_validation(self, train_dataset, validation_dataset):
+        plt.scatter(
+            train_dataset["x"],
+            train_dataset["y"],
+            label="Treino"
+        )
+
+        plt.scatter(
+            validation_dataset["x"],
+            validation_dataset["y"],
+            label="Validação"
+        )
+
+        x = pd.concat([
+            train_dataset["x"],
+            validation_dataset["x"]
+        ])
+
+        plt.plot(
+            x,
+            self.predict(x),
+            label="Modelo"
+        )
+
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.legend()
+        plt.show()
+
 def main():
     train_dataset = TOY_DATASET[:25]
     validation_dataset = TOY_DATASET[25:]
@@ -38,6 +68,6 @@ def main():
     lr.fit(train_dataset)
     lr.predict(1)
     lr.score(validation_dataset)
-
+    lr.plot_validation(train_dataset,validation_dataset)
 if __name__ == "__main__":
     main()
