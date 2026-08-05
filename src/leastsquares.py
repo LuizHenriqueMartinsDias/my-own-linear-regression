@@ -1,3 +1,2 @@
 class LinearRegression:
-    def __init__(self):
-        pass
+    def calc_coeff(self, X, Y):
