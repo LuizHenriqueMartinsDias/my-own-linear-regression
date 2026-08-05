@@ -21,8 +21,8 @@ class LinearRegression:
         self.b = (sumy - self.m * sumx) / n
 
     def predict(self,x):
-        y = self.m * x + self.b
-        print(y)
+        return self.m * x + self.b
+
 
 def main():
     lr = LinearRegression()
