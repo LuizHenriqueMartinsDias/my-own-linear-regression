@@ -1,6 +1,8 @@
 from pathlib import Path
 
 import pandas as pd
+from pandas import Series
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 arquivo = BASE_DIR / "data" / "toy_dataset"
 TOY_DATASET = pd.read_csv(arquivo)
@@ -23,11 +25,19 @@ class LinearRegression:
     def predict(self,x):
         return self.m * x + self.b
 
+    def score(self,validation_dataset):
+       predictions = self.predict(validation_dataset["x"])
+       sqr = ((predictions - validation_dataset["y"])**2).sum()
+       sqt = ((validation_dataset["y"].mean() - validation_dataset["y"])**2).sum()
+       print("R² =",1-(sqr/sqt))
 
 def main():
+    train_dataset = TOY_DATASET[:25]
+    validation_dataset = TOY_DATASET[25:]
     lr = LinearRegression()
-    lr.fit(TOY_DATASET)
+    lr.fit(train_dataset)
     lr.predict(1)
+    lr.score(validation_dataset)
 
 if __name__ == "__main__":
     main()
