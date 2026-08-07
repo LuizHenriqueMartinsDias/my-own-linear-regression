@@ -2,8 +2,6 @@ import random
 from pathlib import Path
 
 import pandas as pd
-from pandas import Series
-from streamlit.watcher.path_watcher import get_default_path_watcher_class
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 arquivo = BASE_DIR / "data" / "toy_dataset"
@@ -65,32 +63,28 @@ class LinearRegression:
         plt.legend()
         plt.show()
 
-class LinearRegressionGD:
+class LinearRegressionGD(LinearRegression):
     def __init__(self, learning_rate=0.001):
+        super().__init__()
         self.coef_ = random.uniform(-1, 1)
         self.intercept_ = random.uniform(-1, 1)
         self.learning_rate = learning_rate
 
-    def fit(self,train_dataset):
-        for epoch in range(3500):
-            predictions = []
+    def fit(self, train_dataset):
+        x = train_dataset["x"]
+        y = train_dataset["y"]
+        n = len(train_dataset)
 
-            for x in train_dataset["x"]:
-                predictions.append(self.coef_ * x + self.intercept_)
-            predictions = pd.Series(predictions)
-            mse = ((train_dataset["y"] - predictions) ** 2).mean()
-            erros = []
+        for epoch in range(5000):
+            predictions = self.coef_ * x + self.intercept_
+            erros = y - predictions
 
-            for index, y in enumerate(train_dataset["y"]):
-                erros.append(y - predictions.iloc[index])
+            gd_w = (-2 / n) * (erros * x).sum()
+            gd_b = (-2 / n) * erros.sum()
 
-            erros = pd.Series(erros)
+            self.coef_ -= self.learning_rate * gd_w
+            self.intercept_ -= self.learning_rate * gd_b
 
-            erroxreal = (erros * train_dataset["x"]).sum()
-            gd_w = (-2/len(train_dataset)) * erroxreal
-            gd_y = (-2/len(train_dataset["y"]))*sum(erros)
-            self.coef_ = self.coef_ - self.learning_rate * gd_w
-            self.intercept_ = self.intercept_ - self.learning_rate * gd_y
     def predict(self,x):
         return self.coef_ * x + self.intercept_
 
@@ -104,12 +98,27 @@ def dataset_split(dataset,split:float):
     return train_dataset, validation_dataset
 
 def main():
-    train_dataset,validation_dataset=dataset_split(TOY_DATASET,0.2)
+    """X, y = make_regression(n_samples=100, n_features=1, noise=5.0, random_state=42)
+    df = DataFrame({"x":X[0],"y":y}, index=[x for x in range(100)])
+    train_dataset,validation_dataset = dataset_split(df,0.2)
+    """
+    """ m = random.randint(1,20)
+    b = random.randint(1,20)
+    df = DataFrame()
+    for x in range(50):
+        c = x + random.randint(1,20)
+        df2 = DataFrame({"x":x,"y":m*c+b},index=[x])
+        df = pd.concat([df,df2])
+    df.to_csv("toy_dataset",index=False)"""
+    train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.2)
     lrgd = LinearRegressionGD()
-    lrgd.fit(train_dataset)
     lr = LinearRegression()
     lr.fit(train_dataset)
     lrgd.fit(train_dataset)
     print(lrgd.predict(1),lr.predict(1))
+    lrgd.score(validation_dataset)
+    lr.score(validation_dataset)
+    lr.plot_validation(train_dataset,validation_dataset)
+    lrgd.plot_validation(train_dataset,validation_dataset)
 if __name__ == "__main__":
     main()
