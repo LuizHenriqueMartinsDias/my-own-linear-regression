@@ -1,6 +1,7 @@
 import random
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,10 +72,9 @@ class LinearRegressionGD(LinearRegression):
         self.learning_rate = learning_rate
 
     def fit(self, train_dataset):
-        x = train_dataset["x"]
+        x = np.array(train_dataset["x"])
         y = train_dataset["y"]
         n = len(train_dataset)
-
         for epoch in range(5000):
             predictions = self.coef_ * x + self.intercept_
             erros = y - predictions
@@ -98,18 +98,6 @@ def dataset_split(dataset,split:float):
     return train_dataset, validation_dataset
 
 def main():
-    """X, y = make_regression(n_samples=100, n_features=1, noise=5.0, random_state=42)
-    df = DataFrame({"x":X[0],"y":y}, index=[x for x in range(100)])
-    train_dataset,validation_dataset = dataset_split(df,0.2)
-    """
-    """ m = random.randint(1,20)
-    b = random.randint(1,20)
-    df = DataFrame()
-    for x in range(50):
-        c = x + random.randint(1,20)
-        df2 = DataFrame({"x":x,"y":m*c+b},index=[x])
-        df = pd.concat([df,df2])
-    df.to_csv("toy_dataset",index=False)"""
     train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.2)
     lrgd = LinearRegressionGD()
     lr = LinearRegression()
