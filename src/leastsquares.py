@@ -67,11 +67,13 @@ class LinearRegression:
 class LinearRegressionGD(LinearRegression):
     def __init__(self, learning_rate=0.001):
         super().__init__()
-        self.coef_ = random.uniform(-1, 1)
-        self.intercept_ = random.uniform(-1, 1)
+        self.coef_ = None
+        self.intercept_ = None
         self.learning_rate = learning_rate
 
     def fit(self, train_dataset):
+        self.intercept_ = random.uniform(-1, 1)
+        self.coef_ = [random.uniform(-1, 1) for x in train_dataset.drop(columns="y").columns]
         x = np.array(train_dataset["x"])
         y = train_dataset["y"]
         n = len(train_dataset)
@@ -98,7 +100,7 @@ def dataset_split(dataset,split:float):
     return train_dataset, validation_dataset
 
 def main():
-    train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.2)
+    train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.4)
     lrgd = LinearRegressionGD()
     lr = LinearRegression()
     lr.fit(train_dataset)
