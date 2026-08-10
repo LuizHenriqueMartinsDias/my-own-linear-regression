@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from pandas import DataFrame
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 arquivo = BASE_DIR / "data" / "toy_dataset"
@@ -65,27 +66,33 @@ class LinearRegression:
         plt.show()
 
 class LinearRegressionGD(LinearRegression):
-    def __init__(self, learning_rate=0.001):
+    def __init__(self, learning_rate=0.0001):
         super().__init__()
         self.coef_ = None
         self.intercept_ = None
         self.learning_rate = learning_rate
 
     def fit(self, train_dataset):
-        self.intercept_ = random.uniform(-1, 1)
-        self.coef_ = [random.uniform(-1, 1) for x in train_dataset.drop(columns="y").columns]
-        x = np.array(train_dataset["x"])
+        x = train_dataset.drop(columns="y")
         y = train_dataset["y"]
+        self.intercept_ = random.uniform(-1, 1)
+        self.coef_ = [random.uniform(-1, 1) for _ in x.columns]
         n = len(train_dataset)
-        for epoch in range(5000):
-            predictions = self.coef_ * x + self.intercept_
-            erros = y - predictions
 
-            gd_w = (-2 / n) * (erros * x).sum()
-            gd_b = (-2 / n) * erros.sum()
+        for epoch in range(1):
+            predictions = []
+            weighted_x = x.copy()
+            for index, c in enumerate(x):
+                weighted_x[c] = weighted_x[c] * self.coef_[index]
+            for index, row in weighted_x.iterrows():
+                prediction = 0
+                for elem in row:
+                    prediction += elem
+                predictions.append(prediction + self.intercept_)
+            mse = (1/n)*(((y - predictions)**2).sum())
+            error = y - predictions
 
-            self.coef_ -= self.learning_rate * gd_w
-            self.intercept_ -= self.learning_rate * gd_b
+            print(mse)
 
     def predict(self,x):
         return self.coef_ * x + self.intercept_
@@ -102,13 +109,9 @@ def dataset_split(dataset,split:float):
 def main():
     train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.4)
     lrgd = LinearRegressionGD()
-    lr = LinearRegression()
-    lr.fit(train_dataset)
     lrgd.fit(train_dataset)
-    print(lrgd.predict(1),lr.predict(1))
-    lrgd.score(validation_dataset)
-    lr.score(validation_dataset)
-    lr.plot_validation(train_dataset,validation_dataset)
+
+
     lrgd.plot_validation(train_dataset,validation_dataset)
 if __name__ == "__main__":
     main()
