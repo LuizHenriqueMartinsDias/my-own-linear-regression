@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 arquivo = BASE_DIR / "data" / "toy_dataset"
@@ -65,7 +65,7 @@ class LinearRegression:
         plt.legend()
         plt.show()
 
-class LinearRegressionGD(LinearRegression):
+class LinearRegressionGD():
     def __init__(self, learning_rate=0.0001):
         super().__init__()
         self.coef_ = None
@@ -79,7 +79,7 @@ class LinearRegressionGD(LinearRegression):
         self.coef_ = [random.uniform(-1, 1) for _ in x.columns]
         n = len(train_dataset)
 
-        for epoch in range(1):
+        for epoch in range(1200):
             predictions = []
             weighted_x = x.copy()
             for index, c in enumerate(x):
@@ -90,12 +90,24 @@ class LinearRegressionGD(LinearRegression):
                     prediction += elem
                 predictions.append(prediction + self.intercept_)
             mse = (1/n)*(((y - predictions)**2).sum())
-            error = y - predictions
 
-            print(mse)
+            predictions = Series(predictions)
+            error = predictions - y
 
-    def predict(self,x):
-        return self.coef_ * x + self.intercept_
+            for index, column in enumerate(x):
+                self.coef_[index] = self.coef_[index] - (((error * 2 * x[column]).sum() / n) * self.learning_rate)
+
+            b_slope = (error * 2).sum() / n
+            self.intercept_ = self.intercept_ - (self.learning_rate * b_slope)
+            print("MSE:",mse)
+            print("epoch:",epoch)
+            print("w:",self.coef_)
+            print("b:",self.intercept_)
+
+    def predict(self,x:DataFrame|list):
+        if isinstance(x, DataFrame):
+            return [np.ndarray(self.coef_) @ x] + self.intercept_
+        return sum([x * y for x, y in zip(self.coef_, x)] ) + self.intercept_
 
 def dataset_split(dataset,split:float):
     dt_split = len(dataset) * split
@@ -108,10 +120,9 @@ def dataset_split(dataset,split:float):
 
 def main():
     train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.4)
-    lrgd = LinearRegressionGD()
+    lrgd = LinearRegressionGD(learning_rate=0.0001)
     lrgd.fit(train_dataset)
+    print(lrgd.predict([1,10,5]))
 
-
-    lrgd.plot_validation(train_dataset,validation_dataset)
 if __name__ == "__main__":
     main()
