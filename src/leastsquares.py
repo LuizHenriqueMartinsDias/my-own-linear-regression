@@ -105,16 +105,16 @@ class LinearRegressionGD():
             print("w:",self.coef_)
             print("b:",self.intercept_)
 
-    def predict(self,x:DataFrame|list):
+    def predict(self, x: DataFrame | list):
         if isinstance(x, DataFrame):
-            sum_of_features = 0
-            for index,column in enumerate(x.columns):
-                sum_of_features += (self.coef_[index] * x[column]).sum()
-            return sum_of_features + self.intercept_
+            return x.to_numpy() @ np.asarray(self.coef_) + self.intercept_
 
-        return sum([x * y for x, y in zip(self.coef_, x)] ) + self.intercept_
+        x = np.asarray(x, dtype=float)
+        return np.asarray(self.coef_) @ x + self.intercept_
+
     def score(self,validation_dataset):
        predictions = self.predict(validation_dataset.drop(columns="y"))
+       print(predictions)
        sqr = ((predictions - validation_dataset["y"])**2).sum()
        sqt = ((validation_dataset["y"].mean() - validation_dataset["y"])**2).sum()
        print("R² =",1-(sqr/sqt))
@@ -131,9 +131,10 @@ def dataset_split(dataset,split:float):
 def main():
     train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.4)
     lrgd = LinearRegressionGD(learning_rate=0.0001)
-    lrgd.fit(train_dataset)
+    lrgd.intercept_=1.105910752273535
+    lrgd.coef_ = [np.float64(-5.375807191674883), np.float64(6.1509574752432705), np.float64(12.4044069996072)]
     print(lrgd.predict([1,10,5]))
-    print(lrgd.score(validation_dataset))
+    lrgd.score(validation_dataset)
 
 if __name__ == "__main__":
     main()
