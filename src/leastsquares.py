@@ -66,20 +66,21 @@ class LinearRegression:
         plt.show()
 
 class LinearRegressionGD():
-    def __init__(self, learning_rate=0.0001):
+    def __init__(self, learning_rate=0.0001,epochs=1200):
         super().__init__()
         self.coef_ = None
         self.intercept_ = None
         self.learning_rate = learning_rate
+        self.epochs = epochs
 
     def fit(self, train_dataset):
         x = train_dataset.drop(columns="y")
         y = train_dataset["y"]
-        self.intercept_ = random.uniform(-1, 1)
-        self.coef_ = [random.uniform(-1, 1) for _ in x.columns]
+        self.intercept_ = 0.0
+        self.coef_ = [0.0 for _ in x.columns]
         n = len(train_dataset)
 
-        for epoch in range(1200):
+        for epoch in range(self.epochs):
             predictions = []
             weighted_x = x.copy()
             for index, c in enumerate(x):
@@ -106,8 +107,17 @@ class LinearRegressionGD():
 
     def predict(self,x:DataFrame|list):
         if isinstance(x, DataFrame):
-            return [np.ndarray(self.coef_) @ x] + self.intercept_
+            sum_of_features = 0
+            for index,column in enumerate(x.columns):
+                sum_of_features += (self.coef_[index] * x[column]).sum()
+            return sum_of_features + self.intercept_
+
         return sum([x * y for x, y in zip(self.coef_, x)] ) + self.intercept_
+    def score(self,validation_dataset):
+       predictions = self.predict(validation_dataset.drop(columns="y"))
+       sqr = ((predictions - validation_dataset["y"])**2).sum()
+       sqt = ((validation_dataset["y"].mean() - validation_dataset["y"])**2).sum()
+       print("R² =",1-(sqr/sqt))
 
 def dataset_split(dataset,split:float):
     dt_split = len(dataset) * split
@@ -123,6 +133,7 @@ def main():
     lrgd = LinearRegressionGD(learning_rate=0.0001)
     lrgd.fit(train_dataset)
     print(lrgd.predict([1,10,5]))
+    print(lrgd.score(validation_dataset))
 
 if __name__ == "__main__":
     main()
