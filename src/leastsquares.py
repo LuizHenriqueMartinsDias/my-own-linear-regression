@@ -73,12 +73,12 @@ class LinearRegressionGD():
         self.learning_rate = learning_rate
         self.epochs = epochs
 
-    def fit(self, train_dataset):
-        x = train_dataset.drop(columns="y")
-        y = train_dataset["y"]
+    def fit(self, x,y):
+        x = x.reset_index(drop=True)
+        y = y.reset_index(drop=True)
         self.intercept_ = 0.0
         self.coef_ = [0.0 for _ in x.columns]
-        n = len(train_dataset)
+        n = len(x)
 
         for epoch in range(self.epochs):
             predictions = []
@@ -100,10 +100,11 @@ class LinearRegressionGD():
 
             b_slope = (error * 2).sum() / n
             self.intercept_ = self.intercept_ - (self.learning_rate * b_slope)
-            print("MSE:",mse)
-            print("epoch:",epoch)
-            print("w:",self.coef_)
-            print("b:",self.intercept_)
+            if epoch % 10 == 0:
+                print("MSE:",mse)
+                print("epoch:",epoch)
+                print("w:",self.coef_)
+                print("b:",self.intercept_)
 
     def predict(self, x: DataFrame | list):
         if isinstance(x, DataFrame):
@@ -112,29 +113,48 @@ class LinearRegressionGD():
         x = np.asarray(x, dtype=float)
         return np.asarray(self.coef_) @ x + self.intercept_
 
-    def score(self,validation_dataset):
-       predictions = self.predict(validation_dataset.drop(columns="y"))
+    def score(self,X,y):
+       predictions = self.predict(X)
        print(predictions)
-       sqr = ((predictions - validation_dataset["y"])**2).sum()
-       sqt = ((validation_dataset["y"].mean() - validation_dataset["y"])**2).sum()
+       sqr = ((predictions - y)**2).sum()
+       sqt = ((y.mean() - y)**2).sum()
        print("R² =",1-(sqr/sqt))
 
 def dataset_split(dataset,split:float):
+
     dt_split = len(dataset) * split
     validation_dataset = dataset.sample(
         n=int(dt_split),
         random_state=42
     )
     train_dataset = dataset.drop(validation_dataset.index)
-    return train_dataset, validation_dataset
+    return train_dataset.drop(columns="y"),train_dataset["y"], validation_dataset.drop(columns="y"),validation_dataset["y"]
+def standarization(x, mean=None, std=None):
+    if mean is None:
+        mean = x.mean(axis=0)
+
+    if std is None:
+        std = x.std(axis=0)
+
+    x = (x - mean) / std
+
+    return x, mean, std
 
 def main():
-    train_dataset,validation_dataset = dataset_split(TOY_DATASET,0.4)
-    lrgd = LinearRegressionGD(learning_rate=0.0001)
-    lrgd.intercept_=1.105910752273535
-    lrgd.coef_ = [np.float64(-5.375807191674883), np.float64(6.1509574752432705), np.float64(12.4044069996072)]
-    print(lrgd.predict([1,10,5]))
-    lrgd.score(validation_dataset)
+    X_train,y_train,X_validation,y_validation = dataset_split(TOY_DATASET,0.4)
+    X_train, mean, std = standarization(X_train)
+
+    X_validation, _, _ = standarization(
+        X_validation,
+        mean,
+        std
+    )
+    lrgd = LinearRegressionGD(learning_rate=0.1,epochs=250)
+    lrgd.fit(X_train,y_train)
+    x_novo = pd.DataFrame([[45, 1, 18]], columns=["area_m2", "quartos", "idade_anos"])
+    x_novo_std, _, _ = standarization(x_novo, mean, std)
+    print(lrgd.predict(X_validation))
+    lrgd.score(X_validation,y_validation)
 
 if __name__ == "__main__":
     main()
