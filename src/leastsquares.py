@@ -8,7 +8,32 @@ from pandas import DataFrame, Series
 BASE_DIR = Path(__file__).resolve().parent.parent
 arquivo = BASE_DIR / "data" / "toy_dataset"
 TOY_DATASET = pd.read_csv(arquivo)
-import matplotlib.pyplot as plt
+
+class LinearRegression:
+    def __init__(self):
+        self.coef_ = None
+        self.intercept_ = None
+
+    def fit(self,train_dataset):
+        sumx = train_dataset["x"].sum()
+        sumy = train_dataset["y"].sum()
+        sumxy = (train_dataset["x"] * train_dataset["y"]).sum()
+        sumx2 = (train_dataset["x"] ** 2).sum()
+        n = len(train_dataset)
+
+        self.coef_ = (n * sumxy - sumx * sumy) / (n * sumx2 - sumx ** 2)
+        self.intercept_ = (sumy - self.coef_ * sumx) / n
+
+    def predict(self,x):
+        if self.coef_ is None or self.intercept_ is None:
+            raise ValueError("Please use the fit method before predicting")
+        return self.coef_ * x + self.intercept_
+
+    def score(self,validation_dataset):
+       predictions = self.predict(validation_dataset["x"])
+       sqr = ((predictions - validation_dataset["y"])**2).sum()
+       sqt = ((validation_dataset["y"].mean() - validation_dataset["y"])**2).sum()
+       print("R² =",1-(sqr/sqt))
 
 class LinearRegressionGD:
     def __init__(self, learning_rate=0.0001,epochs=1200):
