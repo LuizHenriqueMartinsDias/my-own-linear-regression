@@ -88,10 +88,3 @@ Isso vai:
 ```bash
 pip install numpy pandas matplotlib
 ```
-
-## Possíveis melhorias futuras
-
-- Guardar `mean`/`std` como atributos do modelo (`self.mean_`, `self.std_`) para padronizar automaticamente dentro de `predict`, evitando o erro de esquecer de padronizar novas amostras.
-- Adicionar early stopping / critério de convergência baseado na variação do MSE.
-- Suporte a mini-batch ou GD estocástico.
-- Testes automatizados comparando os resultados com `scikit-learn`.
