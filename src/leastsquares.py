@@ -77,6 +77,8 @@ class LinearRegressionGD:
                 print("b:",self.intercept_)
 
     def predict(self, x: DataFrame | list):
+        if self.coef_ is None or self.intercept_ is None:
+            raise ValueError("Please use the fit method before predicting")
         if isinstance(x, DataFrame):
             return x.to_numpy() @ np.asarray(self.coef_) + self.intercept_
 
